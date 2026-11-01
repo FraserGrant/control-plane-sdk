@@ -263,20 +263,21 @@ export class DockerStateUpdater implements StateAdapter {
         if (selectedPorts.has(binding.hostPort))
           throw new Error("Each service needs a different host port.");
         selectedPorts.add(binding.hostPort);
-        if (binding.hostIp !== "127.0.0.1" || binding.hostPort < 1024)
+        if (
+          !(this.policy.allowedHostAddresses ?? ["127.0.0.1"]).includes(
+            binding.hostIp,
+          ) ||
+          binding.hostPort < 1024
+        )
           throw new Error(
-            "Managed services must use fixed loopback ports above 1023.",
+            "Managed services must use allowed host addresses and fixed ports above 1023.",
           );
         if (
           container?.State.Running &&
-          owned.some(
-            (entry) =>
-              entry.HostPort === String(binding.hostPort) &&
-              entry.HostIp === binding.hostIp,
-          )
+          owned.some((entry) => entry.HostPort === String(binding.hostPort))
         )
           continue;
-        if (!(await canBind(binding.hostPort)))
+        if (!(await canBind(binding.hostPort, binding.hostIp)))
           throw new Error(
             `Port ${String(binding.hostPort)} is already in use. Keep the current bindings or choose a free port.`,
           );

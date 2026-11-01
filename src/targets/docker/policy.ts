@@ -9,6 +9,8 @@ export interface DockerRuntimePolicy {
   setupVersionLabel: string;
   reservedMountTargets?: readonly string[];
   sensitiveEnvironment?: readonly string[];
+  /** Explicit consumer opt-in; omitted policies remain loopback-only. */
+  allowedHostAddresses?: readonly string[];
   dependencies?: Readonly<Record<string, readonly string[]>>;
   validateSelection?(
     specs: Record<string, ContainerSpec>,
