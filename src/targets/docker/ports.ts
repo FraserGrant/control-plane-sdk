@@ -1,7 +1,10 @@
 import { createServer } from "node:net";
 
 const probes = new Map<string, Promise<boolean>>();
-export async function canBind(port: number, host = "127.0.0.1"): Promise<boolean> {
+export async function canBind(
+  port: number,
+  host = "127.0.0.1",
+): Promise<boolean> {
   const key = `${host}:${String(port)}`;
   const existing = probes.get(key);
   if (existing) return existing;
