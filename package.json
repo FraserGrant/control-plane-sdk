@@ -1,0 +1,83 @@
+{
+  "name": "@frasergrant/control-plane-sdk",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared state reconciliation, protected persistence and local Docker adapters for FraserGrant control-plane products.",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FraserGrant/control-plane-sdk.git"
+  },
+  "engines": {
+    "bun": ">=1.4.0"
+  },
+  "files": [
+    "src",
+    "dist",
+    "README.md",
+    "LICENSE.md",
+    "COMMERCIAL-LICENSE.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./src/core/index.ts",
+      "bun": "./src/core/index.ts",
+      "browser": "./src/core/index.ts",
+      "import": "./dist/core/index.js"
+    },
+    "./core": {
+      "types": "./src/core/index.ts",
+      "bun": "./src/core/index.ts",
+      "browser": "./src/core/index.ts",
+      "import": "./dist/core/index.js"
+    },
+    "./persistence": {
+      "types": "./src/persistence/index.ts",
+      "bun": "./src/persistence/index.ts",
+      "browser": "./src/persistence/index.ts",
+      "import": "./dist/persistence/index.js"
+    },
+    "./docker": {
+      "types": "./src/targets/docker/index.ts",
+      "bun": "./src/targets/docker/index.ts",
+      "browser": "./src/targets/docker/index.ts",
+      "import": "./dist/targets/docker/index.js"
+    },
+    "./host": {
+      "types": "./src/host/index.ts",
+      "bun": "./src/host/index.ts",
+      "browser": "./src/host/index.ts",
+      "import": "./dist/host/index.js"
+    },
+    "./browser": {
+      "types": "./src/browser/index.ts",
+      "bun": "./src/browser/index.ts",
+      "browser": "./src/browser/index.ts",
+      "import": "./dist/browser/index.js"
+    }
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "format": "prettier --write .",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test tests",
+    "test:docker": "RUN_DOCKER_TESTS=1 bun test tests/generic-docker.integration.test.ts",
+    "check": "prettier --check . && bun run build && eslint && tsc --noEmit && bun run test && bun run test:package",
+    "test:package": "bun scripts/verify-package.ts"
+  },
+  "dependencies": {
+    "microdiff": "^1.6.0",
+    "zod": "^4.3.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/bun": "^1.4.4",
+    "eslint": "^10.13.0",
+    "eslint-plugin-unicorn": "^78.0.0",
+    "prettier": "^3.9.10",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.72.0"
+  }
+}

@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.local/
+bun.lock
+AGENTS.md
+.playwright-cli/
+.playwright/

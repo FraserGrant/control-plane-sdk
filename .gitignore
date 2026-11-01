@@ -1,0 +1,27 @@
+# Local configuration, credentials and runtime data
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+.local/
+.runtime/
+.cache/
+
+# Dependencies and generated output
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Browser sessions and test artifacts
+.playwright-cli/
+.playwright/
+playwright-report/
+test-results/
+
+# Editor and operating system files
+.DS_Store
+*.swp
+*.swo
