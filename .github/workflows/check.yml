@@ -15,3 +15,5 @@ jobs:
           bun-version: 1.4.0
       - run: bun install --frozen-lockfile
       - run: bun run check
+      - name: Verify isolated Docker runtime
+        run: bun run test:docker

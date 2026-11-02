@@ -293,6 +293,73 @@ export class Docker {
         `Docker archive import failed: ${Buffer.concat(chunks).toString("utf8")}`,
       );
   }
+  async saveImage(image: string, destination: string): Promise<void> {
+    const response = await this.response(
+      "GET",
+      `/images/${encodeURIComponent(image)}/get`,
+    );
+    if (response.statusCode !== 200) {
+      response.resume();
+      throw new Error("Could not save container filesystem image.");
+    }
+    await pipeline(
+      response,
+      createWriteStream(destination, { flags: "wx", mode: 0o600 }),
+    );
+  }
+  async loadImage(source: string): Promise<string[]> {
+    let upload: Promise<void> = Promise.resolve();
+    const response = await new Promise<IncomingMessage>((resolve, reject) => {
+      const connection = request(
+        {
+          socketPath: this.socket,
+          path: `${this.api}/images/load?quiet=true`,
+          method: "POST",
+          headers: { "Content-Type": "application/x-tar" },
+        },
+        resolve,
+      );
+      connection.setTimeout(600_000, () =>
+        connection.destroy(new Error("Docker image import timed out.")),
+      );
+      connection.on("error", reject);
+      upload = pipeline(createReadStream(source), connection);
+      void upload.catch(reject);
+    });
+    const chunks: Buffer[] = [];
+    let bytes = 0;
+    for await (const chunk of response) {
+      const data = Buffer.isBuffer(chunk)
+        ? chunk
+        : Buffer.from(z.string().parse(chunk));
+      bytes += data.length;
+      if (bytes > 1024 * 1024)
+        throw new Error(
+          "Docker image import response exceeds the supported size.",
+        );
+      chunks.push(data);
+    }
+    await upload;
+    if (response.statusCode !== 200)
+      throw new Error("Docker image archive could not be imported.");
+    const loadedImages: string[] = [];
+    for (const line of Buffer.concat(chunks)
+      .toString("utf8")
+      .trim()
+      .split("\n")) {
+      if (!line) continue;
+      const result = z
+        .object({ error: z.string().optional(), stream: z.string().optional() })
+        .parse(JSON.parse(line));
+      const loaded = /Loaded image ID: (sha256:[a-f0-9]{64})/.exec(
+        result.stream ?? "",
+      )?.[1];
+      if (loaded) loadedImages.push(loaded);
+      if (result.error)
+        throw new Error(`Docker image import failed: ${result.error}`);
+    }
+    return loadedImages;
+  }
   async archive(name: string, destination: string): Promise<void> {
     const response = await this.response(
       "GET",
